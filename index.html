@@ -606,10 +606,7 @@ db.ref('attendance').on('value',snap=>{
   attendanceData=list;
   updateAttendInfo();
   renderAttendChecklist();
-  const el=document.getElementById('attend-list');
-  const rows=Object.entries(list).filter(([k,i])=>i&&i.list).sort((a,b)=>String(b[1].date).localeCompare(String(a[1].date)));
-  if(!rows.length){el.innerHTML='<p style="color:#888;">출석 기록이 없습니다</p>';return;}
-  el.innerHTML=rows.map(([key,i])=>`<div class="list-item"><strong>📅 ${i.date}</strong> (${i.list.length}명)<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${i.list.map(p=>`<span style="background:#e2e8f0;padding:2px 6px;border-radius:4px;font-size:12px;">${p.name}</span>`).join('')}</div><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delAttend('${key}')">삭제</button></div></div>`).join('');
+  renderAttendList();
 });
 
 // 같은 날짜 기록이 있으면 새로 추가하지 않고 덮어쓰기 (날짜당 기록 1개 유지)
@@ -639,7 +636,44 @@ function saveAttendance(){
     else alert(`✅ ${d} 출석 저장 완료! (${list.length}명)`);
   }).catch(e=>alert('⚠️ 저장 실패: '+e.message));
 }
-function delAttend(key){if(!confirm('삭제하시겠습니까?'))return;db.ref('attendance/'+key).remove();}
+// 같은 날짜 기록이 여러 개 남아 있어도 목록에는 날짜당 하나로 합쳐서 표시
+function groupAttendanceByDate(){
+  const groups={};
+  Object.entries(attendanceData||{}).forEach(([k,rec])=>{
+    if(!rec||!rec.list||!rec.date)return;
+    const g=groups[rec.date]||(groups[rec.date]={date:rec.date,keys:[],people:{}});
+    g.keys.push(k);
+    rec.list.forEach(p=>{
+      let id=(p.key&&allPlayers[p.key])?p.key:null;
+      if(!id){
+        const f=Object.keys(allPlayers).find(x=>allPlayers[x].name===p.name);
+        id=f||('n:'+p.name);
+      }
+      g.people[id]=p.name;   // 같은 선수는 한 번만
+    });
+  });
+  return Object.values(groups).sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+function renderAttendList(){
+  const el=document.getElementById('attend-list');
+  const rows=groupAttendanceByDate();
+  if(!rows.length){el.innerHTML='<p style="color:#888;">출석 기록이 없습니다</p>';return;}
+  el.innerHTML=rows.map(g=>{
+    const names=Object.values(g.people);
+    return `<div class="list-item"><strong>📅 ${g.date}</strong> (${names.length}명)<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${names.map(n=>`<span style="background:#e2e8f0;padding:2px 6px;border-radius:4px;font-size:12px;">${n}</span>`).join('')}</div><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delAttendDate('${g.date}')">삭제</button></div></div>`;
+  }).join('');
+}
+
+// 해당 날짜의 출석 기록을 모두 삭제 (중복 기록이 있어도 함께 삭제)
+function delAttendDate(date){
+  if(!confirm(`${date} 출석 기록을 삭제하시겠습니까?`))return;
+  const updates={};
+  Object.entries(attendanceData||{}).forEach(([k,rec])=>{
+    if(rec&&rec.date===date) updates['attendance/'+k]=null;
+  });
+  if(Object.keys(updates).length) db.ref().update(updates).catch(e=>alert('⚠️ 삭제 실패: '+e.message));
+}
 
 // =========================================
 // 5. 작전판 (날짜 + 코트별 저장)

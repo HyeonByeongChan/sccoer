@@ -40,7 +40,6 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
 
-/* ✅ 작전판 포지션 최적화 — 겹치지 않게 재배치 */
 /* ===== 작전판 필드 ===== */
 .field{
   background:linear-gradient(to bottom,#4ade80,#22c55e);
@@ -96,7 +95,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
 .attend-photo{width:40px;height:50px;border-radius:4px;overflow:hidden;}
 .attend-photo img{width:100%;height:100%;object-fit:cover;}
 
-/* ✅ 동영상 촬영/저장 스타일 */
+/* ===== 동영상 ===== */
 .video-item{background:#f8fafc;border-radius:8px;padding:10px;margin:6px 0;}
 .video-preview{width:100%;height:140px;background:#000;border-radius:6px;overflow:hidden;margin-bottom:8px;}
 .video-preview video{width:100%;height:100%;object-fit:cover;}
@@ -150,7 +149,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
       <div class="photo-box" id="p-photo" onclick="document.getElementById('p-photo-input').click()">사진선택</div>
       <input type="file" id="p-photo-input" accept="image/*" style="display:none" onchange="setPlayerPhoto(this)">
       <div style="flex:1;">
-        <input type="text" id="reg-num" placeholder="등록번호" readonly style="background:#f1f5f9;">
+        <input type="text" id="reg-num" placeholder="등록번호 (자동 부여)" readonly style="background:#f1f5f9;">
         <input type="date" id="reg-date">
         <input type="text" id="p-name" placeholder="성명">
       </div>
@@ -204,65 +203,66 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
       <button data-court="8">코트8</button>
     </div>
     <input type="date" id="tactics-date" style="max-width:180px;margin-bottom:8px;">
-    <button class="small" style="margin-bottom:8px;" onclick="loadAttendToTactics()">📥 출석 선수 불러오기</button>
-    
-<div class="field" id="tactics-field">
-  <div class="field-line"></div>
-  <div class="field-circle"></div>
+    <button class="small" style="margin-bottom:6px;" onclick="loadAttendToTactics()">📥 출석 선수 불러오기</button>
+    <div id="attend-info" style="font-size:12px;color:#475569;margin-bottom:8px;"></div>
 
-  <!-- 공격 -->
-  <div class="pos" data-pos="ST" style="top:3%;left:50%;" onclick="selectPos('ST')">
-    <div class="pos-img" id="pos-img-ST"></div>
-    <div class="pos-name" id="pos-name-ST">ST</div>
-  </div>
-  <div class="pos" data-pos="LW" style="top:12%;left:14%;" onclick="selectPos('LW')">
-    <div class="pos-img" id="pos-img-LW"></div>
-    <div class="pos-name" id="pos-name-LW">LW</div>
-  </div>
-  <div class="pos" data-pos="RW" style="top:12%;left:86%;" onclick="selectPos('RW')">
-    <div class="pos-img" id="pos-img-RW"></div>
-    <div class="pos-name" id="pos-name-RW">RW</div>
-  </div>
+    <div class="field" id="tactics-field">
+      <div class="field-line"></div>
+      <div class="field-circle"></div>
 
-  <!-- 미드필더 -->
-  <div class="pos" data-pos="CM1" style="top:31%;left:32%;" onclick="selectPos('CM1')">
-    <div class="pos-img" id="pos-img-CM1"></div>
-    <div class="pos-name" id="pos-name-CM1">CM1</div>
-  </div>
-  <div class="pos" data-pos="CM2" style="top:31%;left:68%;" onclick="selectPos('CM2')">
-    <div class="pos-img" id="pos-img-CM2"></div>
-    <div class="pos-name" id="pos-name-CM2">CM2</div>
-  </div>
-  <div class="pos" data-pos="CDM" style="top:47%;left:50%;" onclick="selectPos('CDM')">
-    <div class="pos-img" id="pos-img-CDM"></div>
-    <div class="pos-name" id="pos-name-CDM">CDM</div>
-  </div>
+      <!-- 공격 -->
+      <div class="pos" data-pos="ST" style="top:3%;left:50%;" onclick="selectPos('ST')">
+        <div class="pos-img" id="pos-img-ST"></div>
+        <div class="pos-name" id="pos-name-ST">ST</div>
+      </div>
+      <div class="pos" data-pos="LW" style="top:12%;left:14%;" onclick="selectPos('LW')">
+        <div class="pos-img" id="pos-img-LW"></div>
+        <div class="pos-name" id="pos-name-LW">LW</div>
+      </div>
+      <div class="pos" data-pos="RW" style="top:12%;left:86%;" onclick="selectPos('RW')">
+        <div class="pos-img" id="pos-img-RW"></div>
+        <div class="pos-name" id="pos-name-RW">RW</div>
+      </div>
 
-  <!-- 수비 -->
-  <div class="pos" data-pos="LB" style="top:65%;left:14%;" onclick="selectPos('LB')">
-    <div class="pos-img" id="pos-img-LB"></div>
-    <div class="pos-name" id="pos-name-LB">LB</div>
-  </div>
-  <div class="pos" data-pos="CB1" style="top:65%;left:37%;" onclick="selectPos('CB1')">
-    <div class="pos-img" id="pos-img-CB1"></div>
-    <div class="pos-name" id="pos-name-CB1">CB1</div>
-  </div>
-  <div class="pos" data-pos="CB2" style="top:65%;left:63%;" onclick="selectPos('CB2')">
-    <div class="pos-img" id="pos-img-CB2"></div>
-    <div class="pos-name" id="pos-name-CB2">CB2</div>
-  </div>
-  <div class="pos" data-pos="RB" style="top:65%;left:86%;" onclick="selectPos('RB')">
-    <div class="pos-img" id="pos-img-RB"></div>
-    <div class="pos-name" id="pos-name-RB">RB</div>
-  </div>
+      <!-- 미드필더 -->
+      <div class="pos" data-pos="CM1" style="top:31%;left:32%;" onclick="selectPos('CM1')">
+        <div class="pos-img" id="pos-img-CM1"></div>
+        <div class="pos-name" id="pos-name-CM1">CM1</div>
+      </div>
+      <div class="pos" data-pos="CM2" style="top:31%;left:68%;" onclick="selectPos('CM2')">
+        <div class="pos-img" id="pos-img-CM2"></div>
+        <div class="pos-name" id="pos-name-CM2">CM2</div>
+      </div>
+      <div class="pos" data-pos="CDM" style="top:47%;left:50%;" onclick="selectPos('CDM')">
+        <div class="pos-img" id="pos-img-CDM"></div>
+        <div class="pos-name" id="pos-name-CDM">CDM</div>
+      </div>
 
-  <!-- GK -->
-  <div class="pos" data-pos="GK" style="top:83%;left:50%;" onclick="selectPos('GK')">
-    <div class="pos-img" id="pos-img-GK"></div>
-    <div class="pos-name" id="pos-name-GK">GK</div>
-  </div>
-</div>
-    
+      <!-- 수비 -->
+      <div class="pos" data-pos="LB" style="top:65%;left:14%;" onclick="selectPos('LB')">
+        <div class="pos-img" id="pos-img-LB"></div>
+        <div class="pos-name" id="pos-name-LB">LB</div>
+      </div>
+      <div class="pos" data-pos="CB1" style="top:65%;left:37%;" onclick="selectPos('CB1')">
+        <div class="pos-img" id="pos-img-CB1"></div>
+        <div class="pos-name" id="pos-name-CB1">CB1</div>
+      </div>
+      <div class="pos" data-pos="CB2" style="top:65%;left:63%;" onclick="selectPos('CB2')">
+        <div class="pos-img" id="pos-img-CB2"></div>
+        <div class="pos-name" id="pos-name-CB2">CB2</div>
+      </div>
+      <div class="pos" data-pos="RB" style="top:65%;left:86%;" onclick="selectPos('RB')">
+        <div class="pos-img" id="pos-img-RB"></div>
+        <div class="pos-name" id="pos-name-RB">RB</div>
+      </div>
+
+      <!-- GK -->
+      <div class="pos" data-pos="GK" style="top:83%;left:50%;" onclick="selectPos('GK')">
+        <div class="pos-img" id="pos-img-GK"></div>
+        <div class="pos-name" id="pos-name-GK">GK</div>
+      </div>
+    </div>
+
     <div class="btn-row" style="margin-top:10px;">
       <button onclick="saveTactics()">💾 서버에 작전 저장</button>
       <button class="del" onclick="clearTactics()">자리 비우기</button>
@@ -273,7 +273,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
     </div>
   </div>
   <div class="card"><h3>📝 전체 작전 기록</h3><div id="tactics-list" class="loading">데이터 불러오는 중...</div></div>
-  
+
   <div id="player-select-popup">
     <div>
       <h4 style="margin-bottom:10px;">선수 선택</h4>
@@ -297,7 +297,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
       <button data-scourt="8">코트8</button>
     </div>
     <input type="date" id="score-date" style="max-width:180px;margin-bottom:10px;">
-    
+
     <div class="score-board">
       <div class="time-display" id="game-time">00:00</div>
       <div class="score-row">
@@ -330,7 +330,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
   <div class="card"><h3>📊 전체 점수기록</h3><div id="score-list" class="loading">데이터 불러오는 중...</div></div>
 </div>
 
-{/* ✅ 동영상 페이지 복원 */}
+<!-- ✅ 동영상 페이지 -->
 <div id="page7" class="page">
   <div class="card">
     <h2>🎬 동영상 촬영 / 저장</h2>
@@ -350,7 +350,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
   <div class="card">
     <h2>🔗 공유 안내</h2>
     <p style="margin-bottom:10px;color:#64748b;">✅ 이제 이 파일을 카톡으로 공유하면 모든 회원이 같은 데이터를 함께 볼 수 있습니다!</p>
-    <p style="background:#e2e8f0;padding:10px;border-radius:6px;font-size:13px;margin-bottom:10px;">⚠️ 주의: 사진/동영상은 기기 내에서만 보관되며 텍스트 정보만 서버에 공유됩니다.</p>
+    <p style="background:#e2e8f0;padding:10px;border-radius:6px;font-size:13px;margin-bottom:10px;">⚠️ 주의: 동영상은 기기 내에서만 보관되며, 선수 사진은 축소되어 서버에 공유됩니다.</p>
     <button class="share-btn" onclick="shareLink()">📲 이 앱 링크 공유하기</button>
   </div>
 </div>
@@ -368,7 +368,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
 
 <script>
 // =========================================
-// 🔴 Firebase 설정 — 여기에 본인 설정 붙여넣기
+// 🔴 Firebase 설정
 // =========================================
 const firebaseConfig = {
   apiKey: "AIzaSyAFDw3zShWOUkWjOEZm4FtMVt1y7VIzsEY",
@@ -384,13 +384,27 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const POSITIONS = ['GK','LB','CB1','CB2','RB','CDM','CM1','CM2','LW','ST','RW'];
 
+// ---- 공용 유틸 ----
+// 한국 시간 기준 오늘 날짜 (toISOString은 UTC라 새벽에 하루 전으로 나옴)
+function todayStr(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ---- 전역 상태 ----
 let playerPhotoTemp = '';
 let currentCourt = 1;
 let currentScoreCourt = 1;
 let selectedPosKey = '';
 let timerSec = 0, timerInterval = null;
 let allPlayers = {};
-let videoData = JSON.parse(localStorage.getItem('videoData')||'[]');
+let attendanceData = {};   // 출석 기록 전체 (작전판에서 날짜별 출석 선수 필터에 사용)
+
+// 작전판 상태: draft = 화면에서 편집 중인 배치, 저장 버튼을 눌러야 서버 반영
+let tacticsData = {};
+let draft = {};
+let draftDirty = false;
+let lastTDate = todayStr();
 
 db.ref('.info/connected').on('value', snap => {
   const status = document.getElementById('sync-status');
@@ -414,7 +428,7 @@ document.querySelectorAll('.bottom-nav button').forEach(btn=>{
     const pageId = this.dataset.nav;
     document.getElementById(pageId).classList.add('active');
     if(pageId==='page4') renderAttendChecklist();
-    if(pageId==='page5'){document.getElementById('tactics-date').value=new Date().toISOString().slice(0,10);renderTactics();}
+    if(pageId==='page5') renderTactics();
     if(pageId==='page7') renderVideoList();
   });
 });
@@ -477,35 +491,71 @@ db.ref('players').on('value',snap=>{
   allPlayers = snap.val()||{};
   const el=document.getElementById('player-list');
   const arr = Object.entries(allPlayers);
-  if(!arr.length){el.innerHTML='<p style="color:#888;">등록된 선수가 없습니다</p>';return;}
-  el.innerHTML=arr.reverse().map(([key,i])=>`<div class="list-item" style="display:flex;gap:10px;"><div class="photo-box" style="width:50px;height:65px;">${i.photo?`<img src="${i.photo}">`:'사진'}</div><div style="flex:1;"><strong>${i.regNum}</strong> ${i.name} (${i.age})<br>🎽${i.jersey||'-'} | ${i.pos}<br>📅${i.birth||'-'} | 📞${i.phone||'-'}<div class="btn-row" style="justify-content:flex-end;"><button class="del small" onclick="delPlayer('${key}')">삭제</button></div></div></div>`).join('');
+  if(!arr.length){el.innerHTML='<p style="color:#888;">등록된 선수가 없습니다</p>';}
+  else{
+    el.innerHTML=arr.reverse().map(([key,i])=>`<div class="list-item" style="display:flex;gap:10px;"><div class="photo-box" style="width:50px;height:65px;">${i.photo?`<img src="${i.photo}">`:'사진'}</div><div style="flex:1;"><strong>${i.regNum}</strong> ${i.name} (${i.age})<br>🎽${i.jersey||'-'} | ${i.pos}<br>📅${i.birth||'-'} | 📞${i.phone||'-'}<div class="btn-row" style="justify-content:flex-end;"><button class="del small" onclick="delPlayer('${key}')">삭제</button></div></div></div>`).join('');
+  }
   renderAttendChecklist();
+  renderTactics(); // 선수 사진이 로드/변경되면 작전판에도 반영
 });
 
-function setPlayerPhoto(input){
-  if(input.files&&input.files[0]){
-    const r=new FileReader();r.onload=e=>{playerPhotoTemp=e.target.result;document.getElementById('p-photo').innerHTML=`<img src="${playerPhotoTemp}">`;};
-    r.readAsDataURL(input.files[0]);
+// 사진을 가로/세로 최대 200px JPEG로 줄여서 DB 용량을 아낌
+function resizeImage(file,max=200,q=0.75){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onerror=reject;
+    r.onload=e=>{
+      const img=new Image();
+      img.onerror=reject;
+      img.onload=()=>{
+        const s=Math.min(1,max/Math.max(img.width,img.height));
+        const c=document.createElement('canvas');
+        c.width=Math.round(img.width*s);
+        c.height=Math.round(img.height*s);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        resolve(c.toDataURL('image/jpeg',q));
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+async function setPlayerPhoto(input){
+  if(!input.files||!input.files[0])return;
+  try{
+    playerPhotoTemp=await resizeImage(input.files[0]);
+    document.getElementById('p-photo').innerHTML=`<img src="${playerPhotoTemp}">`;
+  }catch(e){
+    alert('사진을 불러오지 못했습니다');
   }
 }
+
 function savePlayer(){
   const d=document.getElementById('reg-date').value,n=document.getElementById('p-name').value.trim();
   if(!d||!n){alert('날짜와 성명은 필수입니다');return;}
-  const keys=Object.keys(allPlayers).length+1;
-  const newKey = db.ref('players').push().key;
-  db.ref('players/'+newKey).set({
-    regNum: String(keys).padStart(3,'0'),
-    regDate: d, name: n, birth: document.getElementById('p-birth').value,
-    jersey: document.getElementById('p-jersey').value, age: document.getElementById('p-age').value,
-    phone: document.getElementById('p-phone').value.trim(), addr: document.getElementById('p-addr').value.trim(),
-    pos: document.getElementById('p-pos').value, photo: playerPhotoTemp || ''
-  }).then(()=>{alert('✅ 선수 등록 완료!');resetPlayerForm();});
+  // 등록번호: 기존 최대값과 서버 카운터 중 큰 값 + 1 (삭제해도 중복되지 않음)
+  const max=Object.values(allPlayers).reduce((m,p)=>Math.max(m,parseInt(p.regNum,10)||0),0);
+  db.ref('meta/lastRegNum').transaction(cur=>Math.max(cur||0,max)+1).then(res=>{
+    const regNum=String(res.snapshot.val()).padStart(3,'0');
+    return db.ref('players').push().set({
+      regNum: regNum,
+      regDate: d, name: n, birth: document.getElementById('p-birth').value,
+      jersey: document.getElementById('p-jersey').value, age: document.getElementById('p-age').value,
+      phone: document.getElementById('p-phone').value.trim(), addr: document.getElementById('p-addr').value.trim(),
+      pos: document.getElementById('p-pos').value, photo: playerPhotoTemp || ''
+    });
+  }).then(()=>{
+    alert('✅ 선수 등록 완료!');
+    resetPlayerForm();
+  }).catch(e=>alert('⚠️ 등록 실패: '+e.message));
 }
 function resetPlayerForm(){
   document.getElementById('reg-date').value='';document.getElementById('p-name').value='';document.getElementById('p-birth').value='';
   document.getElementById('p-jersey').value='';document.getElementById('p-age').value='';document.getElementById('p-phone').value='';
   document.getElementById('p-addr').value='';document.getElementById('p-pos').value='';
   document.getElementById('p-photo').innerHTML='사진선택';playerPhotoTemp='';
+  document.getElementById('p-photo-input').value='';
 }
 function delPlayer(key){if(!confirm('삭제하시겠습니까?'))return;db.ref('players/'+key).remove();}
 
@@ -516,11 +566,13 @@ function renderAttendChecklist(){
   const list=document.getElementById('attend-checklist');
   const arr=Object.entries(allPlayers);
   if(!arr.length){list.innerHTML='<p style="color:#888;">등록된 선수가 없습니다</p>';return;}
-  list.innerHTML=arr.map(([key,i])=>`<label class="attend-item"><input type="checkbox" value="${key}" data-name="${i.name}" data-photo="${i.photo||''}"><div class="attend-photo">${i.photo?`<img src="${i.photo}">`:'📷'}</div><div><strong>${i.name}</strong></div></label>`).join('');
+  list.innerHTML=arr.map(([key,i])=>`<label class="attend-item"><input type="checkbox" value="${key}" data-name="${i.name}"><div class="attend-photo">${i.photo?`<img src="${i.photo}">`:'📷'}</div><div><strong>${i.name}</strong></div></label>`).join('');
 }
 
 db.ref('attendance').on('value',snap=>{
   const list=snap.val()||{};
+  attendanceData=list;
+  updateAttendInfo();
   const el=document.getElementById('attend-list');
   if(!Object.keys(list).length){el.innerHTML='<p style="color:#888;">출석 기록이 없습니다</p>';return;}
   el.innerHTML=Object.entries(list).reverse().map(([key,i])=>`<div class="list-item"><strong>📅 ${i.date}</strong> (${i.list.length}명)<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${i.list.map(p=>`<span style="background:#e2e8f0;padding:2px 6px;border-radius:4px;font-size:12px;">${p.name}</span>`).join('')}</div><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delAttend('${key}')">삭제</button></div></div>`).join('');
@@ -529,7 +581,8 @@ db.ref('attendance').on('value',snap=>{
 function saveAttendance(){
   const d=document.getElementById('attend-date').value;if(!d){alert('날짜를 선택하세요');return;}
   const checks=document.querySelectorAll('#attend-checklist input:checked');
-  const list=Array.from(checks).map(c=>({name:c.dataset.name,photo:c.dataset.photo}));
+  // 사진은 저장하지 않고 선수 key와 이름만 저장 (DB 용량 절약)
+  const list=Array.from(checks).map(c=>({key:c.value,name:c.dataset.name}));
   if(!list.length){alert('출석 선수를 한 명 이상 체크하세요');return;}
   db.ref('attendance').push({date:d,list:list});
   alert('✅ 출석 저장 완료!');
@@ -538,78 +591,177 @@ function saveAttendance(){
 function delAttend(key){if(!confirm('삭제하시겠습니까?'))return;db.ref('attendance/'+key).remove();}
 
 // =========================================
-// 5. 작전판
+// 5. 작전판 (날짜 + 코트별 저장)
+// 저장 경로: tactics/{날짜}/court{번호}/{date, positions}
+// 예전 형식(tactics/court1/...)은 목록 표시·삭제만 지원
 // =========================================
+function tPath(){
+  return `tactics/${document.getElementById('tactics-date').value}/court${currentCourt}`;
+}
+function guardSwitch(){
+  return !draftDirty || confirm('저장하지 않은 배치가 있습니다. 버리고 이동할까요?');
+}
+function loadDraft(){
+  const date=document.getElementById('tactics-date').value;
+  const d=((tacticsData[date]||{})['court'+currentCourt])||{};
+  draft=JSON.parse(JSON.stringify(d.positions||{}));
+  draftDirty=false;
+  renderTactics();
+}
+
 document.querySelectorAll('#tactics-courts button').forEach(btn=>{
   btn.addEventListener('click',function(){
+    if(!guardSwitch())return;
     document.querySelectorAll('#tactics-courts button').forEach(b=>b.classList.remove('active'));
-    this.classList.add('active');currentCourt=parseInt(this.dataset.court);renderTactics();
+    this.classList.add('active');
+    currentCourt=parseInt(this.dataset.court);
+    loadDraft();
   });
 });
 
-function loadAttendToTactics(){alert('✅ 출석 선수 목록을 준비했습니다. 자리를 클릭해 배치하세요!');}
+document.getElementById('tactics-date').addEventListener('change',function(){
+  if(!guardSwitch()){this.value=lastTDate;return;}
+  lastTDate=this.value;
+  loadDraft();
+});
 
-function selectPos(posKey){
+// 해당 날짜에 출석체크한 선수만 모아서 반환
+// has: 그 날짜의 출석 기록이 있는지 / players: {선수key: 선수정보}
+function getAttendees(date){
+  const players={};
+  let has=false;
+  Object.values(attendanceData||{}).forEach(rec=>{
+    if(!rec||rec.date!==date)return;
+    has=true;
+    (rec.list||[]).forEach(p=>{
+      let key=p.key;
+      // 예전 기록(key 없음)은 이름으로 선수를 찾음
+      if(!key||!allPlayers[key]){
+        key=Object.keys(allPlayers).find(k=>allPlayers[k].name===p.name);
+      }
+      if(key&&allPlayers[key]) players[key]=allPlayers[key];
+    });
+  });
+  return {has,players};
+}
+
+function updateAttendInfo(){
+  const el=document.getElementById('attend-info');
+  if(!el)return;
+  const date=document.getElementById('tactics-date').value;
+  const {has,players}=getAttendees(date);
+  const names=Object.values(players).map(p=>p.name);
+  if(!has) el.textContent=`📭 ${date} 출석 기록이 없습니다 (출석 탭에서 먼저 저장하세요)`;
+  else el.textContent=`✅ ${date} 출석 ${names.length}명: ${names.join(', ')}`;
+}
+
+function loadAttendToTactics(){
+  const date=document.getElementById('tactics-date').value;
+  if(!date){alert('날짜를 선택하세요');return;}
+  updateAttendInfo();
+  const {has,players}=getAttendees(date);
+  const names=Object.values(players).map(p=>p.name);
+  if(!has) alert(`${date}에는 출석체크 기록이 없습니다.\n출석 탭에서 먼저 출석을 저장하세요.`);
+  else alert(`✅ ${date} 출석 선수 ${names.length}명을 불러왔습니다.\n자리를 눌러 배치하세요!\n\n${names.join(', ')}`);
+}
+
+function selectPos(posKey,all){
   selectedPosKey=posKey;
-  const arr=Object.entries(allPlayers);
-  document.getElementById('player-select-list').innerHTML=arr.length
-    ?arr.map(([key,p])=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eee;cursor:pointer;" onclick="assignPlayer('${key}','${p.name}','${p.photo||''}')"><div style="width:35px;height:45px;border-radius:4px;overflow:hidden;">${p.photo?`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;">`:'📷'}</div><div><strong>${p.name}</strong></div></label>`).join('')
-    :'<p style="color:#888;">등록된 선수가 없습니다</p>';
+  const date=document.getElementById('tactics-date').value;
+  const {has,players}=getAttendees(date);
+  const useAll=!!all;
+  const arr=Object.entries(useAll?allPlayers:players);
+  const box=document.getElementById('player-select-list');
+  if(!useAll&&!has){
+    box.innerHTML=`<p style="color:#888;margin-bottom:8px;">${date}에 출석체크한 선수가 없습니다.<br>출석 탭에서 먼저 출석을 저장하세요.</p><button class="small gray" onclick="selectPos('${posKey}',true)">전체 선수에서 선택</button>`;
+  }else if(!arr.length){
+    box.innerHTML='<p style="color:#888;">선택할 수 있는 선수가 없습니다</p>';
+  }else{
+    box.innerHTML=arr.map(([key,p])=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eee;cursor:pointer;" onclick="assignPlayer('${key}')"><div style="width:35px;height:45px;border-radius:4px;overflow:hidden;">${p.photo?`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;">`:'📷'}</div><div><strong>${p.name}</strong></div></label>`).join('');
+  }
   document.getElementById('player-select-popup').style.display='flex';
 }
 function closePlayerPopup(){document.getElementById('player-select-popup').style.display='none';}
-function assignPlayer(key,name,photo){
+
+function assignPlayer(key){
   closePlayerPopup();
-  const ck=`court${currentCourt}`;
-  db.ref(`tactics/${ck}/positions/${selectedPosKey}`).set({name,photo});
+  const p=allPlayers[key];if(!p)return;
+  draft[selectedPosKey]={key:key,name:p.name}; // 사진은 저장하지 않고 화면에서 선수 목록에서 가져옴
+  draftDirty=true;
+  renderTactics();
 }
 
-let tacticsData = {};
 db.ref('tactics').on('value',snap=>{
-  tacticsData = snap.val()||{};
-  renderTactics();
+  tacticsData=snap.val()||{};
+  if(!draftDirty) loadDraft();   // 편집 중이 아닐 때만 서버 변경을 반영
   renderTacticsList();
 });
 
 function renderTactics(){
-  const ck=`court${currentCourt}`;const d=tacticsData[ck]||{positions:{}};
+  updateAttendInfo();
   POSITIONS.forEach(pos=>{
-    const img=document.getElementById(`pos-img-${pos}`);const name=document.getElementById(`pos-name-${pos}`);
-    const p=d.positions&&d.positions[pos];
-    if(p){img.innerHTML=p.photo?`<img src="${p.photo}">`:"";name.textContent=p.name;}
-    else{img.innerHTML="";name.textContent=pos;}
+    const img=document.getElementById(`pos-img-${pos}`);
+    const name=document.getElementById(`pos-name-${pos}`);
+    const p=draft[pos];
+    if(p){
+      const ph=((allPlayers[p.key]||{}).photo)||p.photo||'';
+      img.innerHTML=ph?`<img src="${ph}">`:'';
+      name.textContent=p.name;
+    }else{
+      img.innerHTML='';
+      name.textContent=pos;
+    }
   });
 }
 
 function saveTactics(){
-  const d=document.getElementById('tactics-date').value;if(!d){alert('날짜를 선택하세요');return;}
-  const ck=`court${currentCourt}`;
-  db.ref(`tactics/${ck}/date`).set(d);
-  alert(`✅ 코트${currentCourt} 작전 저장 완료!`);
+  const date=document.getElementById('tactics-date').value;
+  if(!date){alert('날짜를 선택하세요');return;}
+  const ref=db.ref(tPath());
+  const job=Object.keys(draft).length ? ref.set({date:date,positions:draft}) : ref.remove();
+  job.then(()=>{
+    draftDirty=false;
+    alert(`✅ ${date} 코트${currentCourt} 작전 저장 완료!`);
+  }).catch(e=>alert('⚠️ 저장 실패: '+e.message));
 }
 
 function clearTactics(){
-  if(!confirm('현재 코트의 모든 배치를 지우시겠습니까?'))return;
-  const ck=`court${currentCourt}`;
-  db.ref(`tactics/${ck}/positions`).remove();
+  if(!confirm('현재 코트의 모든 배치를 지우시겠습니까? (저장을 눌러야 서버에 반영됩니다)'))return;
+  draft={};
+  draftDirty=true;
+  renderTactics();
 }
 
 function speakAllTactics(){
   speechSynthesis.cancel();
-  const ck=`court${currentCourt}`;const d=tacticsData[ck];
-  if(!d||!d.positions){alert('배치된 선수가 없습니다');return;}
-  const names=Object.values(d.positions).map(p=>p.name).filter(n=>n);
+  const names=POSITIONS.map(k=>draft[k]).filter(Boolean).map(p=>p.name);
   if(!names.length){alert('배치된 선수가 없습니다');return;}
-  const u=new SpeechSynthesisUtterance(names.join(', '));u.lang='ko-KR';speechSynthesis.speak(u);
+  const u=new SpeechSynthesisUtterance(names.join(', '));
+  u.lang='ko-KR';
+  speechSynthesis.speak(u);
 }
 function stopSpeaking(){speechSynthesis.cancel();}
 
 function renderTacticsList(){
-  const list=document.getElementById('tactics-list');const keys=Object.keys(tacticsData);
-  if(!keys.length){list.innerHTML='<p style="color:#888;">저장된 작전이 없습니다</p>';return;}
-  list.innerHTML=keys.map(k=>{const d=tacticsData[k].date;const p=Object.values(tacticsData[k].positions||{}).map(x=>x.name).filter(n=>n);return `<div class="list-item"><strong>📅 ${d} | ${k.replace('court','코트')}</strong><br>${p.length?p.join(' - '):'선수 없음'}<div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delTactics('${k}')">삭제</button></div></div>`;}).join('');
+  const list=document.getElementById('tactics-list');
+  const rows=[];
+  Object.entries(tacticsData).forEach(([k,v])=>{
+    if(k.startsWith('court')){ // 예전 형식 기록
+      rows.push({date:(v&&v.date)||'-',court:k,path:'tactics/'+k,pos:(v&&v.positions)||{}});
+    }else{
+      Object.entries(v||{}).forEach(([ck,cv])=>{
+        rows.push({date:k,court:ck,path:`tactics/${k}/${ck}`,pos:(cv&&cv.positions)||{}});
+      });
+    }
+  });
+  if(!rows.length){list.innerHTML='<p style="color:#888;">저장된 작전이 없습니다</p>';return;}
+  rows.sort((a,b)=>b.date.localeCompare(a.date)||a.court.localeCompare(b.court));
+  list.innerHTML=rows.map(r=>{
+    const names=POSITIONS.map(k=>r.pos[k]).filter(Boolean).map(x=>x.name);
+    return `<div class="list-item"><strong>📅 ${r.date} | ${r.court.replace('court','코트')}</strong><br>${names.length?names.join(' - '):'선수 없음'}<div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delTactics('${r.path}')">삭제</button></div></div>`;
+  }).join('');
 }
-function delTactics(k){if(!confirm('삭제하시겠습니까?'))return;db.ref('tactics/'+k).remove();}
+function delTactics(path){if(!confirm('삭제하시겠습니까?'))return;db.ref(path).remove();}
 
 // =========================================
 // 6. 점수판
@@ -647,39 +799,78 @@ function renderScoreList(){
 function delScore(key){if(!confirm('삭제하시겠습니까?'))return;db.ref('scores/'+key).remove();}
 
 // =========================================
-// ✅ 7. 동영상 촬영 / 저장 — 복원
+// 7. 동영상 촬영 / 저장 (IndexedDB에 파일 자체를 보관 → 새로고침해도 유지)
 // =========================================
-function addVideoItem(input){
+try{localStorage.removeItem('videoData');}catch(e){} // 예전 방식(재생 불가) 데이터 정리
+
+let videoDBPromise=null;
+function openVideoDB(){
+  if(videoDBPromise)return videoDBPromise;
+  videoDBPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open('clubVideos',1);
+    req.onupgradeneeded=()=>req.result.createObjectStore('videos',{keyPath:'id'});
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>{videoDBPromise=null;reject(req.error);};
+  });
+  return videoDBPromise;
+}
+async function videoTx(mode,fn){
+  const idb=await openVideoDB();
+  return new Promise((resolve,reject)=>{
+    const tx=idb.transaction('videos',mode);
+    const req=fn(tx.objectStore('videos'));
+    tx.oncomplete=()=>resolve(req&&req.result);
+    tx.onerror=tx.onabort=()=>reject(tx.error);
+  });
+}
+
+let videoUrls=[];
+
+async function addVideoItem(input){
   if(!input.files||!input.files[0])return;
-  const file=input.files[0];
-  const url=URL.createObjectURL(file);
-  const now=new Date();
-  const dateStr=now.toLocaleDateString('ko-KR')+' '+now.toLocaleTimeString('ko-KR');
-  const newItem={
+  const file=input.files[0], now=new Date();
+  const item={
+    id: Date.now(),
     name: file.name,
     size: (file.size/1024/1024).toFixed(2)+' MB',
     type: file.type,
-    url: url,
-    date: dateStr,
-    timestamp: now.getTime(),
-    id: Date.now()
+    blob: file,
+    date: now.toLocaleDateString('ko-KR')+' '+now.toLocaleTimeString('ko-KR'),
+    timestamp: now.getTime()
   };
-  videoData.unshift(newItem);
-  localStorage.setItem('videoData',JSON.stringify(videoData));
-  renderVideoList();
-  alert('✅ 동영상이 저장되었습니다!');
+  try{
+    await videoTx('readwrite',s=>s.put(item));
+    input.value='';
+    await renderVideoList();
+    alert('✅ 동영상이 저장되었습니다!');
+  }catch(e){
+    alert('⚠️ 동영상 저장 실패 (저장공간 부족이거나 브라우저가 지원하지 않습니다)');
+  }
 }
 
-function renderVideoList(){
+async function renderVideoList(){
   const list=document.getElementById('video-list');
-  if(!videoData.length){list.innerHTML='<p style="color:#888;">저장된 동영상이 없습니다</p>';return;}
-  list.innerHTML=videoData.map(i=>`<div class="video-item"><div class="video-preview"><video src="${i.url}" controls playsinline preload="metadata"></video></div><strong>📹 ${i.name}</strong><br><small>📅 ${i.date} | 📦 ${i.size}</small><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delVideo(${i.id})">삭제</button></div></div>`).join('');
+  videoUrls.forEach(u=>URL.revokeObjectURL(u));
+  videoUrls=[];
+  let items=[];
+  try{
+    items=(await videoTx('readonly',s=>s.getAll()))||[];
+  }catch(e){
+    list.innerHTML='<p style="color:#888;">이 브라우저에서는 동영상 저장을 쓸 수 없습니다</p>';
+    return;
+  }
+  if(!items.length){list.innerHTML='<p style="color:#888;">저장된 동영상이 없습니다</p>';return;}
+  items.sort((a,b)=>b.timestamp-a.timestamp);
+  list.innerHTML=items.map(i=>{
+    const url=URL.createObjectURL(i.blob);
+    videoUrls.push(url);
+    return `<div class="video-item"><div class="video-preview"><video src="${url}" controls playsinline preload="metadata"></video></div><strong>📹 ${i.name}</strong><br><small>📅 ${i.date} | 📦 ${i.size}</small><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delVideo(${i.id})">삭제</button></div></div>`;
+  }).join('');
 }
 
-function delVideo(id){
+async function delVideo(id){
   if(!confirm('이 동영상을 삭제하시겠습니까? 파일 자체는 갤러리에서 삭제되지 않습니다.'))return;
-  videoData=videoData.filter(v=>v.id!==id);
-  localStorage.setItem('videoData',JSON.stringify(videoData));
+  await videoTx('readwrite',s=>s.delete(id));
   renderVideoList();
 }
 
@@ -687,8 +878,11 @@ function shareLink(){
   alert('📲 이 HTML 파일을 카카오톡으로 공유해주세요!\n⚠️ 모든 회원이 같은 Firebase 설정이 된 같은 파일을 사용해야 데이터가 함께 보입니다.');
 }
 
-document.getElementById('tactics-date').value=new Date().toISOString().slice(0,10);
-document.getElementById('score-date').value=new Date().toISOString().slice(0,10);
+// =========================================
+// 초기화
+// =========================================
+document.getElementById('tactics-date').value=todayStr();
+document.getElementById('score-date').value=todayStr();
 renderVideoList();
 </script>
 

@@ -182,6 +182,7 @@ button.share-btn{background:#f9c80e;color:#3c1e1e;}
   <div class="card">
     <h2>✅ 출석체크</h2>
     <input type="date" id="attend-date">
+    <div id="attend-status" style="font-size:12px;color:#475569;margin:2px 0 6px;"></div>
     <h3>선수 목록에서 체크</h3>
     <div id="attend-checklist" style="max-height:250px;overflow-y:auto;">선수 데이터 불러오는 중...</div>
     <button onclick="saveAttendance()">💾 서버에 출석 저장</button>
@@ -562,31 +563,81 @@ function delPlayer(key){if(!confirm('삭제하시겠습니까?'))return;db.ref('
 // =========================================
 // 4. 출석체크
 // =========================================
+// attendDirty: 사용자가 체크박스를 직접 바꾼 상태면 서버 갱신/재렌더 시에도 체크를 유지
+let attendDirty=false;
+
 function renderAttendChecklist(){
   const list=document.getElementById('attend-checklist');
   const arr=Object.entries(allPlayers);
-  if(!arr.length){list.innerHTML='<p style="color:#888;">등록된 선수가 없습니다</p>';return;}
-  list.innerHTML=arr.map(([key,i])=>`<label class="attend-item"><input type="checkbox" value="${key}" data-name="${i.name}"><div class="attend-photo">${i.photo?`<img src="${i.photo}">`:'📷'}</div><div><strong>${i.name}</strong></div></label>`).join('');
+  if(!arr.length){list.innerHTML='<p style="color:#888;">등록된 선수가 없습니다</p>';updateAttendStatus();return;}
+  const date=document.getElementById('attend-date').value;
+  let checked;
+  if(attendDirty){
+    checked=new Set(Array.from(list.querySelectorAll('input:checked')).map(c=>c.value));
+  }else{
+    // 선택한 날짜에 이미 저장된 출석 기록이 있으면 그 선수들을 미리 체크
+    checked=new Set(Object.keys(getAttendees(date).players));
+  }
+  list.innerHTML=arr.map(([key,i])=>`<label class="attend-item"><input type="checkbox" value="${key}" data-name="${i.name}" ${checked.has(key)?'checked':''}><div class="attend-photo">${i.photo?`<img src="${i.photo}">`:'📷'}</div><div><strong>${i.name}</strong></div></label>`).join('');
+  updateAttendStatus();
 }
+
+function updateAttendStatus(){
+  const el=document.getElementById('attend-status');
+  if(!el)return;
+  const date=document.getElementById('attend-date').value;
+  if(!date){el.textContent='';return;}
+  const {has,players}=getAttendees(date);
+  el.textContent=has
+    ?`✏️ ${date} 기존 출석 기록(${Object.keys(players).length}명)이 있습니다. 저장하면 체크된 선수로 덮어씁니다.`
+    :`🆕 ${date} 출석 기록이 없습니다. 저장하면 새로 기록됩니다.`;
+}
+
+document.getElementById('attend-date').addEventListener('change',function(){
+  attendDirty=false;
+  renderAttendChecklist();
+});
+document.getElementById('attend-checklist').addEventListener('change',function(){
+  attendDirty=true;
+});
 
 db.ref('attendance').on('value',snap=>{
   const list=snap.val()||{};
   attendanceData=list;
   updateAttendInfo();
+  renderAttendChecklist();
   const el=document.getElementById('attend-list');
-  if(!Object.keys(list).length){el.innerHTML='<p style="color:#888;">출석 기록이 없습니다</p>';return;}
-  el.innerHTML=Object.entries(list).reverse().map(([key,i])=>`<div class="list-item"><strong>📅 ${i.date}</strong> (${i.list.length}명)<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${i.list.map(p=>`<span style="background:#e2e8f0;padding:2px 6px;border-radius:4px;font-size:12px;">${p.name}</span>`).join('')}</div><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delAttend('${key}')">삭제</button></div></div>`).join('');
+  const rows=Object.entries(list).filter(([k,i])=>i&&i.list).sort((a,b)=>String(b[1].date).localeCompare(String(a[1].date)));
+  if(!rows.length){el.innerHTML='<p style="color:#888;">출석 기록이 없습니다</p>';return;}
+  el.innerHTML=rows.map(([key,i])=>`<div class="list-item"><strong>📅 ${i.date}</strong> (${i.list.length}명)<br><div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">${i.list.map(p=>`<span style="background:#e2e8f0;padding:2px 6px;border-radius:4px;font-size:12px;">${p.name}</span>`).join('')}</div><div class="btn-row" style="margin-top:6px;"><button class="del small" onclick="delAttend('${key}')">삭제</button></div></div>`).join('');
 });
 
+// 같은 날짜 기록이 있으면 새로 추가하지 않고 덮어쓰기 (날짜당 기록 1개 유지)
 function saveAttendance(){
-  const d=document.getElementById('attend-date').value;if(!d){alert('날짜를 선택하세요');return;}
+  const d=document.getElementById('attend-date').value;
+  if(!d){alert('날짜를 선택하세요');return;}
   const checks=document.querySelectorAll('#attend-checklist input:checked');
   // 사진은 저장하지 않고 선수 key와 이름만 저장 (DB 용량 절약)
   const list=Array.from(checks).map(c=>({key:c.value,name:c.dataset.name}));
-  if(!list.length){alert('출석 선수를 한 명 이상 체크하세요');return;}
-  db.ref('attendance').push({date:d,list:list});
-  alert('✅ 출석 저장 완료!');
-  renderAttendChecklist();
+  const sameKeys=Object.keys(attendanceData||{}).filter(k=>attendanceData[k]&&attendanceData[k].date===d);
+
+  if(!list.length){
+    if(!sameKeys.length){alert('출석 선수를 한 명 이상 체크하세요');return;}
+    if(!confirm(`체크된 선수가 없습니다.\n${d} 출석 기록을 모두 삭제할까요?`))return;
+  }
+
+  const keep=sameKeys.length?sameKeys[0]:d;   // 기존 기록이 있으면 그 자리에, 없으면 날짜를 키로 새로 생성
+  const updates={};
+  sameKeys.forEach(k=>{updates['attendance/'+k]=null;});   // 같은 날짜의 중복 기록은 정리
+  if(list.length) updates['attendance/'+keep]={date:d,list:list};
+
+  db.ref().update(updates).then(()=>{
+    attendDirty=false;
+    renderAttendChecklist();
+    if(!list.length) alert(`🗑️ ${d} 출석 기록을 삭제했습니다.`);
+    else if(sameKeys.length) alert(`✅ ${d} 출석 기록을 덮어썼습니다! (${list.length}명)`);
+    else alert(`✅ ${d} 출석 저장 완료! (${list.length}명)`);
+  }).catch(e=>alert('⚠️ 저장 실패: '+e.message));
 }
 function delAttend(key){if(!confirm('삭제하시겠습니까?'))return;db.ref('attendance/'+key).remove();}
 
@@ -883,6 +934,8 @@ function shareLink(){
 // =========================================
 document.getElementById('tactics-date').value=todayStr();
 document.getElementById('score-date').value=todayStr();
+document.getElementById('attend-date').value=todayStr();
+renderAttendChecklist();
 renderVideoList();
 </script>
 

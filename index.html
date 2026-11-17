@@ -603,7 +603,17 @@
                 <form id="noticeForm" onsubmit="saveNotice(event)" class="space-y-2 text-xs">
                     <input type="hidden" id="noticeEditId">
                     <input type="text" id="noticeTitle" placeholder="공지 제목" required class="w-full border p-2 rounded-lg">
-                    <textarea id="noticeContent" placeholder="공지 내용을 작성하세요..." required class="w-full border p-2 rounded-lg h-24"></textarea>
+                    <textarea id="noticeContent" placeholder="공지 내용을 작성하세요..." class="w-full border p-2 rounded-lg h-24"></textarea>
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-semibold text-gray-600">이미지 첨부 <span id="noticeAttachCount" class="font-normal text-gray-500">(0/5)</span></span>
+                            <label class="px-2.5 py-1 bg-pitch text-white text-[11px] font-bold rounded-lg cursor-pointer">
+                                <i class="fa-solid fa-file-arrow-up"></i> 이미지 선택
+                                <input type="file" accept="image/*" multiple class="hidden" onchange="handleNoticeImages(this)">
+                            </label>
+                        </div>
+                        <div id="noticeAttachPreview" class="grid grid-cols-3 gap-2"></div>
+                    </div>
                     <button type="submit" class="w-full bg-pitch text-white py-2.5 rounded-lg font-bold">공지사항 등록</button>
                 </form>
             </div>
@@ -2407,28 +2417,85 @@
         }
 
         /* 9. NOTICES */
+        // 공지 이미지 첨부 (여러 장 선택 → 압축 → 저장 전 미리보기). 이미지는 압축해서 데이터에 함께 저장함
+        const NOTICE_IMG_MAX = 5;
+        let noticeDraft = [];   // 저장 전 첨부 이미지 {name, src}
+
+        async function handleNoticeImages(input) {
+            const files = Array.from(input.files || []);
+            input.value = '';
+            for (const f of files) {
+                if (noticeDraft.length >= NOTICE_IMG_MAX) { showToast(`이미지는 최대 ${NOTICE_IMG_MAX}장까지 첨부할 수 있습니다.`); break; }
+                if (!String(f.type).startsWith('image/')) { showToast(`${f.name}: 이미지 파일만 첨부할 수 있습니다.`); continue; }
+                try { noticeDraft.push({ name: f.name, src: await blobToDataURL(await compressImage(f, 900, 900, 0.6)) }); }
+                catch (e) { console.error(e); showToast(`${f.name} 이미지를 처리하지 못했습니다.`); }
+            }
+            renderNoticePreview();
+        }
+
+        function renderNoticePreview() {
+            const box = document.getElementById('noticeAttachPreview');
+            if (!box) return;
+            const cnt = document.getElementById('noticeAttachCount');
+            if (cnt) cnt.textContent = `(${noticeDraft.length}/${NOTICE_IMG_MAX})`;
+            box.innerHTML = noticeDraft.length === 0
+                ? '<div class="col-span-3 py-3 text-center text-[11px] text-gray-400 bg-gray-50 rounded-lg border border-dashed">첨부된 이미지가 없습니다. 우측 버튼으로 추가하세요.</div>'
+                : noticeDraft.map((a, i) => `
+                    <div class="relative border rounded-lg bg-white p-1">
+                        <img src="${a.src}" class="w-full h-20 object-contain rounded">
+                        <button type="button" onclick="removeNoticeImage(${i})" class="absolute top-0.5 right-0.5 bg-black/60 text-white w-5 h-5 rounded-full text-[11px] leading-none">×</button>
+                        <div class="text-[10px] text-gray-500 truncate mt-0.5">${voteEsc(a.name)}</div>
+                    </div>`).join('');
+        }
+
+        function removeNoticeImage(i) { noticeDraft.splice(i, 1); renderNoticePreview(); }
+
+        // 저장된 공지 이미지 크게 보기 (화면을 누르면 닫힘)
+        function viewNoticeImage(id, k) {
+            const item = DB.get(`notices_${currentClub.name}`).find(n => n.id === id);
+            const src = item && item.images && item.images[k];
+            if (!src) return;
+            let el = document.getElementById('imageViewer');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'imageViewer';
+                el.className = 'fixed inset-0 bg-black/80 z-[60] flex flex-col items-center justify-center p-4';
+                el.onclick = () => el.classList.add('hidden');
+                document.body.appendChild(el);
+            }
+            el.innerHTML = `<img src="${src}" class="max-w-full max-h-[80vh] rounded-lg"><p class="text-white/70 text-xs mt-2">${k + 1} / ${item.images.length} · 화면을 누르면 닫힙니다</p>`;
+            el.classList.remove('hidden');
+        }
+
         function saveNotice(e) {
             e.preventDefault();
             if (!currentClub) return;
             const editId = document.getElementById('noticeEditId').value;
             const title = document.getElementById('noticeTitle').value.trim();
             const content = document.getElementById('noticeContent').value.trim();
+            if (!title) { showToast('공지 제목을 입력하세요.'); return; }
+            const images = noticeDraft.map(a => a.src);
 
             let list = DB.get(`notices_${currentClub.name}`);
+            const item = editId
+                ? { ...(list.find(n => n.id === Number(editId)) || {}), id: Number(editId), title, content, images }
+                : { id: Date.now(), date: eventTodayStr(), title, content, images };
+            // 서버 문서 1개 한도(약 1MB)를 넘기기 전에 미리 안내
+            if (JSON.stringify(list.filter(n => n.id !== item.id)).length + JSON.stringify(item).length > 900000) {
+                alert('저장 용량이 부족합니다.\n이전 공지의 이미지를 삭제하거나 첨부 이미지를 줄여주세요.');
+                return;
+            }
             if (editId) {
-                list = list.map(n => n.id === Number(editId) ? { ...n, title, content } : n);
+                list = list.map(n => n.id === item.id ? item : n);
                 document.getElementById('noticeEditId').value = '';
             } else {
-                list.push({
-                    id: Date.now(),
-                    date: new Date().toISOString().split('T')[0],
-                    title,
-                    content
-                });
+                list.push(item);
             }
 
             DB.set(`notices_${currentClub.name}`, list);
             document.getElementById('noticeForm').reset();
+            noticeDraft = [];
+            renderNoticePreview();
             renderNotices();
             showToast('공지사항이 등록되었습니다.');
         }
@@ -2440,13 +2507,15 @@
             container.innerHTML = list.length === 0 ? '<p class="text-xs text-gray-400">등록된 공지가 없습니다.</p>' : '';
 
             list.slice().reverse().forEach(n => {
+                const imgs = n.images || [];
                 container.innerHTML += `
                     <div class="border p-3 rounded-xl bg-gray-50 space-y-1">
                         <div class="flex justify-between items-center border-b pb-1">
-                            <span class="font-bold text-xs text-gray-800">${n.title}</span>
-                            <span class="text-[10px] text-gray-400">${n.date}</span>
+                            <span class="font-bold text-xs text-gray-800">${voteEsc(n.title)}</span>
+                            <span class="text-[10px] text-gray-400">${voteEsc(n.date)}</span>
                         </div>
-                        <p class="text-xs text-gray-600 whitespace-pre-wrap">${n.content}</p>
+                        <p class="text-xs text-gray-600 whitespace-pre-wrap">${voteEsc(n.content)}</p>
+                        ${imgs.length ? `<div class="grid grid-cols-3 gap-2 pt-1">${imgs.map((src, k) => `<img src="${src}" onclick="viewNoticeImage(${n.id}, ${k})" class="w-full h-24 object-cover rounded border cursor-pointer">`).join('')}</div>` : ''}
                         <div class="flex justify-end gap-2 text-[10px] pt-1">
                             <button onclick="editNotice(${n.id})" class="text-blue-600 font-bold">수정</button>
                             <button onclick="deleteNotice(${n.id})" class="text-red-500 font-bold">삭제</button>
@@ -2462,7 +2531,9 @@
             if (!item) return;
             document.getElementById('noticeEditId').value = item.id;
             document.getElementById('noticeTitle').value = item.title;
-            document.getElementById('noticeContent').value = item.content;
+            document.getElementById('noticeContent').value = item.content || '';
+            noticeDraft = (item.images || []).map((src, k) => ({ name: `이미지 ${k + 1}`, src }));   // 기존 이미지를 불러와 수정 가능
+            renderNoticePreview();
         }
 
         function deleteNotice(id) {
@@ -2611,6 +2682,7 @@
             generateRegNum();
             resetVoteOptions();
             renderStatusPreview();
+            renderNoticePreview();
             checkSession();
         };
     </script>
